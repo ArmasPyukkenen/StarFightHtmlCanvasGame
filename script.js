@@ -1,5 +1,5 @@
 import {Spaceship} from './js/classes/spaceship.js';
-import {Comet} from './js/classes/comet.js'
+import {Comet} from './js/classes/comet.js';
 import {gamma} from './js/gamma.js';
 
 let canvas = document.querySelector('canvas');
@@ -37,7 +37,11 @@ class Star{
 
 class Game{
 	constructor(context){
-		this.spaceship = new Spaceship(500, 300);
+		this.spaceship = new Spaceship({
+			x : 500,
+			y : 300,
+			bulletCoordBox : {min : {x : 0, y : 0}, max : {x : canvas.width, y : canvas.height}}
+		});
 		this.comets = [];
 		this.disposableComets = [];
 		this.bullets = [];
@@ -83,7 +87,7 @@ class Game{
 			}
 		});
 		if(Math.random() < 0.03){
-			this.comets.push(new Comet(40, canvas.height/2));
+			this.comets.push(new Comet({x : 40, y : canvas.height/2}));
 			if(this.comets.length > 10){
 				let tempComet = this.comets.shift();
 				tempComet.dispose();

@@ -1,18 +1,20 @@
 import {gamma} from '../gamma.js';
+import {MovingBall} from './movingBall.js';
 
-export class Bullet{
-	constructor(x, y, angle){
+export class Bullet extends MovingBall{
+	constructor({x, y, angle, r, speed, coordBox}){
+		super();
 		this.x = x;
 		this.y = y;
-		this.r = 5;
-		this.speed = 25;
+		this.r = r || 5;
+		this.speed = speed || 25;
 		this.dx = this.speed * Math.sin(angle);
 		this.dy = -this.speed * Math.cos(angle);
 		this.gone = false;
-		this.minX = 0;
-		this.minY = 0;
-		this.maxX = canvas.width;
-		this.maxY = canvas.height;
+		this.minX = coordBox.min.x || 0;
+		this.minY = coordBox.min.y || 0;
+		this.maxX = coordBox.max.x || 0;
+		this.maxY = coordBox.max.y || 0;
 	}
 	
 	draw(context){

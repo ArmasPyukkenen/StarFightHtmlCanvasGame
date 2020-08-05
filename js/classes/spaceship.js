@@ -1,8 +1,9 @@
 import {Bullet} from './bullet.js';
 import {gamma} from '../gamma.js';
+import {MovingBall} from './movingBall.js';
 
 export class Spaceship{
-	constructor(x, y){
+	constructor({x, y, bulletCoordBox}){
 		this.x = typeof x === 'undefined' ? 100 : x;
 		this.y = typeof y === 'undefined' ? 100 : y;
 		this.r = 20;
@@ -25,6 +26,7 @@ export class Spaceship{
 		this.skin = new Image();
 		this.skin.src = gamma.spaceshipSrc;
 		this.angle = 0;
+		this.bulletCoordBox = bulletCoordBox;
 	}
 
 	draw(c){
@@ -60,6 +62,11 @@ export class Spaceship{
 	}
 
 	shoot(){
-		return new Bullet(this.x + this.dx * this.r / this.speed, this.y + this.dy * this.r / this.speed, this.angle);
+		return new MovingBall({
+			x : this.x + this.dx * this.r / this.speed,
+			y : this.y + this.dy * this.r / this.speed,
+			angle : this.angle,
+			coordBox : this.bulletCoordBox
+		});
 	}
 }

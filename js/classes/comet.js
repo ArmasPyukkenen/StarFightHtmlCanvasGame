@@ -1,12 +1,12 @@
 import {gamma} from '../gamma.js';
 
 export class Comet{
-	constructor(x, y){
+	constructor({x, y, r, dx, dy}){
 		this.x = typeof x === 'undefined' ? 100 : x;
 		this.y = typeof y === 'undefined' ? 100 : y;
-		this.r = Math.random()*30 + 10;
-		this.dx = (Math.random()*8 + 1) * (Math.random() < 0.5 ? 1 : -1);
-		this.dy = (Math.random()*8 + 1) * (Math.random() < 0.5 ? 1 : -1);
+		this.r = r || Math.random()*30 + 10;
+		this.dx = dx || (Math.random()*8 + 1) * (Math.random() < 0.5 ? 1 : -1);
+		this.dy = dy || (Math.random()*8 + 1) * (Math.random() < 0.5 ? 1 : -1);
 		this.minX = 0;
 		this.minY = 0;
 		this.maxX = canvas.width;
