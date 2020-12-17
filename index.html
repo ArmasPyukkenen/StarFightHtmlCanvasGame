@@ -13,11 +13,50 @@
       margin:0;
       padding: 0;
       overflow: hidden;
+      position: relative;
+    }
+
+    menu {
+      position: absolute;
+      width: 40vw;
+      height: 60vh;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(50, 30, 100, 0.4);
+      border: 1px solid rgba(120, 120, 120, 0.4);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      padding: 20px 10px;
+      overflow: auto;
+    }
+
+    button {
+      background-color: transparent;
+      border: 1px solid #000088;
+      padding: 1em 1.5em;
+      color: white;
+      font-size: 2rem;
+      font-family:'Courier New', Courier, monospace;
+    }
+
+    button:hover {
+      background-color: rgba(150, 150, 150, 0.4);
+    }
+
+    .hidden {
+      visibility: hidden;
     }
   </style>
 </head>
 <body>
   <canvas id="canvas"></canvas>
+  <menu>
+    <button>New Game</button>
+    <button>Continue</button>
+    <button>Controls</button>
+  </menu>
   <script type="module" src="script.js"></script>
 </body>
 </html>

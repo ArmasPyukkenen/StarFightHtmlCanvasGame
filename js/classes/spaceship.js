@@ -1,71 +1,63 @@
 import {Bullet} from './bullet.js';
 import {gamma} from '../gamma.js';
-import {MovingBall} from './movingBall.js';
+import { MovingBall } from './movingBall.js';
 
-export class Spaceship{
-	constructor({x, y, bulletCoordBox}){
-		this.x = typeof x === 'undefined' ? 100 : x;
-		this.y = typeof y === 'undefined' ? 100 : y;
-		this.r = 20;
-		this.speed = 10;
-		this.dx = 0;
-		this.dy = 0;
-		this.aimX = this.x;
-		this.aimY = this.y;
-		canvas.addEventListener('mousemove', this.headToCursor.bind(this));
-		document.addEventListener('keydown', e => {
-			if (e.code === "Space"){
-				this.stopped = true;
-			}
-		});
-		document.addEventListener('keyup', e => {
-			if (e.code === "Space"){
-				this.stopped = false;
-			}
-		});
+export class Spaceship extends MovingBall{
+	constructor({x, y, angle, r, speed, coordBox, mode, dx, dy, skin}){
+		super({x, y, angle, r, speed, coordBox, mode, dx, dy});
+		this.r = r || 20;
+		this.speed = speed || 10;
+		this.dx = dx || 0;
+		this.dy = dx || 0;
+		this.setMode(mode || 'stall');
+		this.destination = {x : this.x, y : this.y};
+		this.bulletCoordBox = coordBox;
 		this.skin = new Image();
-		this.skin.src = gamma.spaceshipSrc;
-		this.angle = 0;
-		this.bulletCoordBox = bulletCoordBox;
+		this.skin.src = skin || gamma.spaceshipSrc;
 	}
 
 	draw(c){
 		c.setTransform(1, 0, 0, 1, this.x, this.y); // sets scales and origin
     c.rotate(this.angle);
 		c.drawImage(this.skin, -this.r, -this.r, 2*this.r, 2*this.r);
+		c.setTransform(1, 0, 0, 1, 0, 0);
 	}
 
-	headToCursor(event){
-		this.aimX = event.x;
-		this.aimY = event.y;
-		let distance = Math.sqrt((event.x - this.x)**2 + (event.y - this.y)**2);
-		this.dx = this.speed * (event.x - this.x) / distance;
-		this.dy = this.speed * (event.y - this.y) / distance;
+	setDestination(x, y){
+		this.destination = {x, y};
+		let distance = Math.sqrt((x - this.x)**2 + (y - this.y)**2);
+		this.dx = this.speed * (x - this.x) / distance;
+		this.dy = this.speed * (y - this.y) / distance;
 		this.angle = this.dx > 0 ? Math.acos(-this.dy/this.speed) : -Math.acos(-this.dy/this.speed);
+	}
+
+	halt(){
+		this.stopped = true;
+	}
+
+	continueMovement(){
+		this.stopped = false;
 	}
 
 	move(){
 		if (this.stopped){
 			return;
 		}
-		if (Math.sqrt((this.aimX - this.x)**2 + (this.aimY - this.y)**2) < this.r/2 + this.speed){
-			this.x = this.aimX - this.r*this.dx/(2*this.speed);
-			this.y = this.aimY - this.r*this.dy/(2*this.speed);
+		if (Math.sqrt((this.destination.x - this.x)**2 + (this.destination.y - this.y)**2) < this.r/2 + this.speed){
+			this.x = this.destination.x - this.r*this.dx/(2*this.speed);
+			this.y = this.destination.y - this.r*this.dy/(2*this.speed);
 		} else {
 			this.x += this.dx;
 			this.y += this.dy;
 		}
 	}
 
-	dispose(){
-		canvas.removeEventListener('mousemove', this.headToCursor.bind(this));
-	}
-
 	shoot(){
-		return new MovingBall({
+		return new Bullet({
 			x : this.x + this.dx * this.r / this.speed,
 			y : this.y + this.dy * this.r / this.speed,
 			angle : this.angle,
+			speed : 25,
 			coordBox : this.bulletCoordBox
 		});
 	}

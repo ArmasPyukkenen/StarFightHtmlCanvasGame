@@ -1,12 +1,22 @@
 export class MovingBall{
-	constructor({x, y, angle, r, speed, coordBox, mode}){
+	constructor({x, y, angle, r, speed, coordBox, mode, dx, dy}){
 		this.x = x;
 		this.y = y;
 		this.r = r || 5;
-		this.speed = speed || 25;
-		this.angle = angle || 0;
-		this.dx = this.speed * Math.sin(angle);
-		this.dy = -this.speed * Math.cos(angle);
+		//angle and speed have priority over dx and dy
+		if(typeof angle === 'undefined' || typeof speed === 'undefined'){
+			this.dx = dx || 1;
+			this.dy = dy || 1;
+			this.speed = Math.sqrt(this.dx**2 + this.dy**2);
+			this.angle = undefined;
+		} else {
+			this.speed = speed;
+			//should we calculate the angle change in case of bounce?
+			this.angle = angle;
+			this.dx = this.speed * Math.sin(angle);
+			this.dy = -this.speed * Math.cos(angle);
+		}
+		
 		this.gone = false;
 		this.minX = coordBox.min.x || 0;
 		this.minY = coordBox.min.y || 0;
@@ -55,6 +65,21 @@ const MovingBallModes = {
 		if (this.y - this.r < this.minY || this.y + this.r > this.maxY){
 			this.dy *= -1;
 			this.y += this.dy;
+		}
+	},
+
+	'stall' : function(){
+		if(this.x < this.minX){
+			this.x = this.minX;
+		}
+		if(this.x > this.maxX){
+			this.x = this.maxX;
+		}
+		if(this.y < this.minY){
+			this.y = this.minY;
+		}
+		if(this.y > this.maxY){
+			this.y = this.maxY;
 		}
 	}
 }

@@ -4,7 +4,8 @@ let gamma1 = {
 	meteor2:'#F9E900',
 	space:'#1a1122',
 	bullet:  'hsl(40, 100%, 57%)', //'#2f2',
-	spaceshipSrc: './ships/spaceship_teal.gif'
+	spaceshipSrc: './ships/spaceship_teal.gif',
+	enemy : './ships/spaceship_red.gif'
 }
 
 let gamma2 = {

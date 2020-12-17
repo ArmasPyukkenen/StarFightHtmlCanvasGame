@@ -1,18 +1,11 @@
 import {gamma} from '../gamma.js';
+import {MovingBall} from './movingBall.js';
 
-export class Comet{
-	constructor({x, y, r, dx, dy}){
-		this.x = typeof x === 'undefined' ? 100 : x;
-		this.y = typeof y === 'undefined' ? 100 : y;
-		this.r = r || Math.random()*30 + 10;
-		this.dx = dx || (Math.random()*8 + 1) * (Math.random() < 0.5 ? 1 : -1);
-		this.dy = dy || (Math.random()*8 + 1) * (Math.random() < 0.5 ? 1 : -1);
-		this.minX = 0;
-		this.minY = 0;
-		this.maxX = canvas.width;
-		this.maxY = canvas.height;
+export class Comet extends MovingBall{
+	constructor({x, y, angle, r, speed, coordBox, mode, dx, dy}){
+		super({x, y, angle, r, speed, coordBox, mode, dx, dy});
 		this.shouldDisappear = false;
-    this.gone = false;
+		//Create craters
     this.craters = [];
     for (let i = 0; i < 3; i++){
       let radius = this.r/10 + Math.random() * this.r / 3;
@@ -44,32 +37,10 @@ export class Comet{
     })
 	}
 
-	move(){
-		this.x += this.dx;
-		this.y += this.dy;
-		if (this.x - this.r < this.minX || this.x + this.r > this.maxX){
-			if(this.shouldDisappear){
-				if(this.x + this.r < this.minX || this.x - this.r > this.maxX){
-					this.gone = true;
-				}
-			} else {
-				this.dx *= -1;
-				this.x += this.dx;
-			}
+	setMode(mode){
+		super.setMode(mode);
+		if (mode == 'flyAway'){
+			this.shouldDisappear = true;
 		}
-		if (this.y - this.r < this.minY || this.y + this.r > this.maxY){
-			if(this.shouldDisappear){
-				if(this.y + this.r < this.minY || this.y - this.r > this.maxY){
-					this.gone = true;
-				}
-			} else {
-				this.dy *= -1;
-				this.y += this.dy;	
-			}
-		}
-	}
-
-	dispose(){
-		this.shouldDisappear = true;
 	}
 }
