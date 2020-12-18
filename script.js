@@ -10,50 +10,75 @@ canvas.width  = window.innerWidth;
 canvas.height = window.innerHeight;
 let c = canvas.getContext("2d");
 
+let start = null;
+
 //declare functions
 class Game{
 	constructor(context){
+		this.initialState = {
+			spaceship : {
+				x : 500,
+				y : 300,
+				coordBox : {min : {x : 0, y : 0}, max : {x : canvas.width, y : canvas.height}}
+			}
+			/* new SpaceshipAI({x : 50, y : 50, coordBox : coordBox, speed : 5, skin : gamma.enemy, dataAI : {target : this.spaceship}}),
+			new SpaceshipAI({x : 50, y : 500, coordBox : coordBox,speed : 5, skin : gamma.enemy, dataAI : {target : this.spaceship}}) */
+		}
 		//init object state
 		this.paused = true;
 		this.over = false;
 		this.score = 0;
 		this.context = context;
-		//helper var
-		const coordBox = {min : {x : 0, y : 0}, max : {x : canvas.width, y : canvas.height}}
 		//init game objects
 		this.spaceship = new Spaceship({
-			x : 500,
-			y : 300,
-			coordBox : coordBox
+			x : this.initialState.spaceship.x,
+			y : this.initialState.spaceship.y,
+			coordBox : this.initialState.spaceship.coordBox
 		});
 		this.comets = [];
 		this.disposableComets = [];
 		this.bullets = [];
-		this.enemySpaceships = [
-			/* new SpaceshipAI({x : 50, y : 50, coordBox : coordBox, speed : 5, skin : gamma.enemy, dataAI : {target : this.spaceship}}),
-			new SpaceshipAI({x : 50, y : 500, coordBox : coordBox,speed : 5, skin : gamma.enemy, dataAI : {target : this.spaceship}}) */
-		];
+		this.enemySpaceships = [];
 		//init player controls
-		canvas.addEventListener('click', (event) => {
-			const bullet = this.spaceship.shoot();
-			this.bullets.push(bullet);
-			this.enemySpaceships.forEach(ship => {
-				ship.setAIMode('dodge', {threat : bullet})
-			})
-		});
-		canvas.addEventListener('mousemove', (function(e){
-			return this.setDestination(e.x, e.y)
-		}.bind(this.spaceship)));
-		document.addEventListener('keydown', e => {
-			if (e.code === "Space"){
-				this.spaceship.halt();
+		this.eventListeners = [
+			{
+				target: canvas,
+				event: 'click',
+				handler: (event) => {
+					const bullet = this.spaceship.shoot();
+					this.bullets.push(bullet);
+					this.enemySpaceships.forEach(ship => {
+						ship.setAIMode('dodge', {threat : bullet})
+					})
+				}
+			}, {
+				target: canvas,
+				event: 'mousemove',
+				handler: (function(e){
+					return this.setDestination(e.x, e.y)
+				}.bind(this.spaceship))
+			}, {
+				target: document,
+				event: 'keydown',
+				handler: e => {
+					if (e.code === "Space"){
+						this.spaceship.halt();
+					}
+				}
+			}, {
+				target: document,
+				event: 'keyup',
+				handler: e => {
+					if (e.code === "Space"){
+						this.spaceship.continueMovement();
+					}
+				}
 			}
-		});
-		document.addEventListener('keyup', e => {
-			if (e.code === "Space"){
-				this.spaceship.continueMovement();
-			}
-		});
+		];
+		this.eventListeners.forEach( listener => {
+			listener.target.addEventListener(listener.event, listener.handler);
+		})
+		
 		//init stars
 		this.starCount = 20;
 		this.stars = [];
@@ -64,6 +89,7 @@ class Game{
 		this.run = this.run.bind(this);
 		this.pause = this.pause.bind(this);
 		this.continue = this.continue.bind(this);
+		this.reset = this.reset.bind(this);
 	}
 
 	draw(){
@@ -153,8 +179,9 @@ class Game{
 			})
 			// check commet-spaceship collision
 			if (checkBallsIntercept(comet, this.spaceship)){
-				this.over = true;
-				this.spaceship.dispose();
+				/* this.over = true;
+				this.spaceship.dispose(); */
+				this.end();
 			}
 		})
 	}
@@ -166,11 +193,15 @@ class Game{
 		this.stars.forEach(star => star.draw(c));
 	}
 
-	run() {
-		//draw objects
-		this.draw();
+	run(timestamp) {
+		//debugger;
+		if (start == null) start = timestamp;
+		console.log(timestamp - start);
+		start = timestamp;
 		//recalculate state
 		this.update();
+		//draw objects
+		this.draw();
 		//nextStep
 		if( ! this.paused) {
 			requestAnimationFrame(this.run);
@@ -181,9 +212,31 @@ class Game{
 		this.paused = true;
 	}
 
-	continue() {
+	continue(mousePosition) {
+		if (this.over) return;
 		this.paused = false;
-		this.run();
+		this.spaceship.setDestination(mousePosition.x, mousePosition.y);
+		start = null;
+		requestAnimationFrame(this.run);
+	}
+
+	end() {
+		this.over = true;
+		this.paused = true;
+		this.onGameOver();
+	}
+
+	reset() {
+		this.paused = true;
+		this.over = false;
+		this.score = 0;
+		this.spaceship.x = this.initialState.spaceship.x;
+		this.spaceship.y = this.initialState.spaceship.y;
+		this.spaceship.setDestination(this.spaceship.x + 1, this.spaceship.y);
+		this.comets = [];
+		this.disposableComets = [];
+		this.bullets = [];
+		this.enemySpaceships = [];
 	}
 
 }
@@ -193,13 +246,18 @@ class Game{
 //set state
 let game = new Game(c);
 game.draw();
+game.onGameOver = () => {
+	menu.show();
+	menu.unbindAction(1);
+}
 //animate
 let menu = new Menu();
-menu.bindAction(0, () => {
-	//TODO: change Game class
-	game.continue();
+menu.bindAction(0, (e) => {
+	game.reset();
+	game.continue(e);
+	menu.unbindAction(1);
+	menu.bindAction(1, (e) => game.continue(e));
 });
-menu.bindAction(1, game.continue);
 document.addEventListener('keydown', (e)=> {
 	if( e.key === 'Escape') {
 		menu.show();

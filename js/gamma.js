@@ -17,4 +17,6 @@ let gamma2 = {
 	spaceshipSrc: './ships/spaceship.gif'
 }
 
+
+
 export let gamma = gamma1;
